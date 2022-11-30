@@ -1,26 +1,38 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useState, useRef } from "react"
+import { text } from "stream/consumers"
 import Popup from "./popup"
 
 export default () => {
-  const [showPopup, setShowPopup] = useState(false)
+  const [shiftPressed, _setShiftPressed] = useState(false)
+  const [textSelected, setTextSelected] = useState<string | null>(null)
+
+  const shiftPressedRef = useRef(shiftPressed)
+  const setShiftPressed = data => {
+    shiftPressedRef.current = data
+    _setShiftPressed(data)
+  }
 
   useEffect(() => {
-    window.onmousemove = (e) => {
-      const selectedText = window.getSelection()?.toString() ?? null
+    document.addEventListener("selectionchange", () => {
+      const selectedText = window.getSelection()?.toString() ?? ""
+      const showPopup = shiftPressedRef.current && selectedText !== ""
 
-      if (!e.shiftKey || selectedText === null || selectedText === "") {
-        setShowPopup(false)
-        return
-      }
-      setShowPopup(true)
-    }
+      console.log(selectedText, showPopup)
+
+      showPopup ? setTextSelected(selectedText) : setTextSelected(null)
+    })
+
+    window.addEventListener("keydown", (e) => {
+      console.log("down", e.key)
+      if (e.key === "Shift") setShiftPressed(true)
+    })
 
     window.addEventListener("keyup", (e) => {
-      if(e.key === "Shift") setShowPopup(false)
-    });
+      if (e.key === "Shift") setShiftPressed(false)
+    })
   }, [])
 
-  if (!showPopup) return <></>
+  if (!shiftPressed || textSelected === null) return <></>
 
   return (
     <>
