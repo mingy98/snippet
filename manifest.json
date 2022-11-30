@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Snippet",
+  "version": "1.0.0",
+  "action": {
+    "default_icon": "logo192.png"
+  },
+  "icons": {},
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/index.tsx"],
+      "media": []
+    }
+  ]
+}
