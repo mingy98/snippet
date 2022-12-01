@@ -1,42 +1,63 @@
 import React, { useEffect, useState, useRef } from "react"
-import { text } from "stream/consumers"
-import Popup from "./popup"
+import Save from "./save"
+import Success from "./success"
+
+const specialKey = "Alt"
+const enterKey = "Enter"
 
 export default () => {
-  const [shiftPressed, _setShiftPressed] = useState(false)
-  const [textSelected, setTextSelected] = useState<string | null>(null)
+  const [keyPressed, _setKeyPressed] = useState(false)
+  const [textSelected, _setTextSelected] = useState("")
+  const [showSuccess, setShowSuccess] = useState(false)
 
-  const shiftPressedRef = useRef(shiftPressed)
-  const setShiftPressed = data => {
+  const shiftPressedRef = useRef(keyPressed)
+  const setShiftPressed = (data) => {
     shiftPressedRef.current = data
-    _setShiftPressed(data)
+    _setKeyPressed(data)
+  }
+
+  const textedSelectedRef = useRef(textSelected)
+  const setTextSelected = (data) => {
+    textedSelectedRef.current = data
+    _setTextSelected(data)
   }
 
   useEffect(() => {
     document.addEventListener("selectionchange", () => {
-      const selectedText = window.getSelection()?.toString() ?? ""
-      const showPopup = shiftPressedRef.current && selectedText !== ""
-
-      console.log(selectedText, showPopup)
-
-      showPopup ? setTextSelected(selectedText) : setTextSelected(null)
+      if (shiftPressedRef.current) {
+        setTextSelected(window.getSelection()?.toString() ?? "")
+      } else {
+        setTextSelected("")
+      }
     })
 
     window.addEventListener("keydown", (e) => {
-      console.log("down", e.key)
-      if (e.key === "Shift") setShiftPressed(true)
+      if (e.key === specialKey) setShiftPressed(true)
+    })
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === enterKey && textedSelectedRef.current !== "") {
+        // Save it
+        const selectedNode = window.getSelection()?.getRangeAt(0).startContainer
+          .parentNode as any
+        const parentNode = selectedNode?.parentNode
+        let template = document.createElement("template")
+        template.innerHTML = `<span class="bg-indigo-200 underline decoration-indigo-700">${selectedNode?.innerHTML}</span>`
+        parentNode.replaceChild(template.content.firstChild, selectedNode)
+
+        setTextSelected("")
+        setShowSuccess(true)
+        setTimeout(() => {
+          setShowSuccess(false)
+        }, 3000)
+      }
     })
 
     window.addEventListener("keyup", (e) => {
-      if (e.key === "Shift") setShiftPressed(false)
+      if (e.key === specialKey) setShiftPressed(false)
     })
   }, [])
 
-  if (!shiftPressed || textSelected === null) return <></>
-
-  return (
-    <>
-      <Popup />
-    </>
-  )
+  if (showSuccess) return <Success />
+  return <Save open={textSelected !== ""} />
 }
