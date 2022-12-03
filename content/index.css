@@ -660,12 +660,12 @@ video {
   border-radius: 0.75rem;
 }
 
-.border {
-  border-width: 1px;
+.border-0 {
+  border-width: 0px;
 }
 
-.border-none {
-  border-style: none;
+.border {
+  border-width: 1px;
 }
 
 .border-red-200 {
@@ -677,9 +677,9 @@ video {
   border-color: transparent;
 }
 
-.bg-\[\#ACCEF7\] {
+.bg-yellow-400 {
   --tw-bg-opacity: 1;
-  background-color: rgb(172 206 247 / var(--tw-bg-opacity));
+  background-color: rgb(250 204 21 / var(--tw-bg-opacity));
 }
 
 .bg-white {

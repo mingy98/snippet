@@ -1,11 +1,23 @@
-import React, { Fragment } from "react"
+import React, { Fragment, useRef, useEffect, useState } from "react"
 import { Transition } from "@headlessui/react"
+import ContentEditable, { ContentEditableEvent } from "react-contenteditable"
 
 export default (props: {
   open: boolean
   onSave: (text: string) => void
   onCancel: () => void
 }) => {
+  const textAreaRef = useRef<any>(null)
+  const [text, setText] = useState("")
+
+  const onChange = (evt: ContentEditableEvent) => {
+    if (evt.target.value !== null) setText(evt.target.value)
+  }
+
+  useEffect(() => {
+    if (props.open) textAreaRef.current?.focus()
+  }, [props.open])
+
   return (
     <Transition
       as={Fragment}
@@ -23,16 +35,13 @@ export default (props: {
             <label htmlFor="comment" className="sr-only">
               Add your comment
             </label>
-            <textarea
-              autoFocus
-              rows={3}
-              name="comment"
-              id="comment"
-              className="block w-full resize-none border-none outline-none p-3 sm:text-sm text-gray-900"
-              placeholder="Add your comment..."
-              defaultValue={""}
+            <ContentEditable
+              placeholder="Your best thoughts here..."
+              innerRef={textAreaRef}
+              html={""}
+              onChange={onChange}
+              className="block bg-white w-full resize-none border-0 outline-none p-3 sm:text-sm text-gray-900"
             />
-
             <div className="py-2" aria-hidden="true">
               <div className="py-px">
                 <div className="h-9" />
@@ -49,7 +58,7 @@ export default (props: {
               Cancel
             </button>
             <button
-              onClick={() => props.onSave("")}
+              onClick={() => props.onSave(text)}
               type="submit"
               className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none"
             >

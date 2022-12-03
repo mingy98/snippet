@@ -1,11 +1,11 @@
 import React from "react"
-import Root from "./components"
+import Comment from "./components/comment"
 import { injectReact } from "./modules/inject"
 
 import "./index.css"
 
 injectReact(
   <React.StrictMode>
-    <Root />
+    <Comment />
   </React.StrictMode>
 )

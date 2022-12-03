@@ -12,5 +12,8 @@
       "js": ["content/index.tsx"],
       "media": []
     }
+  ],
+  "permissions": [
+    "storage"
   ]
 }
