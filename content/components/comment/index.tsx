@@ -4,7 +4,7 @@ import Save from "./popup"
 import { styleNode, createXpath } from "../../modules/dom"
 import { getStorage, setStorage } from "../../modules/storage"
 
-const commentKey = "c"
+const commentKey = "s"
 
 const highlightNode = (node: Element) => {
   styleNode(
@@ -21,13 +21,13 @@ export default () => {
   const [selectedNode, setSelectedNode] = useState<Element | undefined | null>(
     undefined
   )
+  const popupRef = useRef<HTMLDivElement>(null)
 
-  const onSave = async (text: string) => {
-    if(selectedNode === null || selectedNode === undefined) return
+  const onSave = async () => {
+    if (selectedNode === null || selectedNode === undefined) return
 
     const xpath = createXpath(selectedNode)
     const savedNotes = (await getStorage(document.URL)) ?? []
-
 
     highlightNode(selectedNode)
     setStorage(document.URL, [...savedNotes, { xpath }])
@@ -36,14 +36,9 @@ export default () => {
     window.getSelection()?.removeAllRanges()
   }
 
-  const onCancel = () => {
-    setShowPopup(false)
-    setSelectedNode(undefined)
-  }
-
   const onLoad = async () => {
     const savedNotes = await getStorage(document.URL)
-    if(savedNotes === undefined) return
+    if (savedNotes === undefined) return
 
     savedNotes.forEach((note) => {
       const savedNode = document
@@ -55,6 +50,12 @@ export default () => {
     })
   }
 
+  // Highlight previously-higlighted text on page load
+  useEffect(() => {
+    onLoad()
+  }, [])
+
+  // Show the save button when the user requests it
   useEffect(() => {
     window.addEventListener("keydown", (e) => {
       if (e.key !== commentKey) return
@@ -70,9 +71,25 @@ export default () => {
     })
   }, [])
 
+  // Detect clicks outside of the popup to hide the popup
   useEffect(() => {
-    onLoad()
+    const handleClick = (event: MouseEvent) => {
+      if (
+        !popupRef.current ||
+        !popupRef.current.contains(event.target as Node)
+      ) {
+        // The click occurred outside of the div, so you can do something here
+        setShowPopup(false)
+        setSelectedNode(undefined)
+      }
+    }
+    document.addEventListener("click", handleClick)
+
+    // Return a cleanup function to remove the event listener when the component unmounts
+    return () => {
+      document.removeEventListener("click", handleClick)
+    }
   }, [])
 
-  return <Save open={showPopup} onSave={onSave} onCancel={onCancel} />
+  return <Save open={showPopup} onSave={onSave} ref={popupRef} />
 }
